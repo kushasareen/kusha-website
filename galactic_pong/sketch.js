@@ -1,6 +1,3 @@
-// To Do:
-//   - collision
-
 function setup() {
   textFont('Ubuntu');
   paused = true;
