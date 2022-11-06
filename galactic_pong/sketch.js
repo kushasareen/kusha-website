@@ -1,6 +1,11 @@
+// To Do:
+//   - something to visualize physics
+
 function setup() {
-  textFont('Ubuntu');
+  relsize = 1;
+  textFont('Helvetica');
   paused = true;
+  showPotential = false;
   windowW = 1080;
   windowH = 600;
   createCanvas(windowW, windowH);
@@ -13,7 +18,7 @@ function setup() {
   easing = 0.1;
   p1Y = p2Y;
   ballR = 20;
-  ballSpeed = createVector(random(-8, 8), random(-8, 8));
+  ballSpeed = createVector(0,0);
   p1X = paddleW+20;
   p2X = windowW - paddleW*2-20;
   p2Difficulty = 1.5;
@@ -25,30 +30,37 @@ function setup() {
   particle = createVector(300, 400);
   Gmm = 10;
   
-  Gm = 20;
-  clockSpeed = 0.01;
+  clockSpeed = 0.08;
   playerTheta = 0;
   ballTheta = 0;
   masterTheta = 0;
   
-  button = createButton('Play/Pause');
-  button.position(0, windowH - 30);
-  button.mousePressed(changeBG);
+  buttonG = createButton('Play/Pause');
+  buttonG.position(0, windowH - 30);
+  buttonG.mousePressed(changeBG);
+  
+//   buttonP = createButton('Toggle Potential');
+//   buttonP.position(450, windowH - 30);
+//   buttonP.mousePressed(changeBP);
   
   sliderG = createSlider(0, 50, 10);
   sliderG.position(100, windowH - 30);
   
-  sliderC = createSlider(200, 400, 250);
+  sliderC = createSlider(150, 400, 200);
   sliderC.position(270, windowH - 30);
   particles = [particle];
+  pastBalls = [];
+  tailLength = 10;
+  ballRed = color(252, 92, 71);
+  particleBlue = color(126, 173, 247);
 }
 
 function draw() {
   background(240, 240, 240);
   setSliders();
   
-  
   if (!paused){
+    updatePastBalls();
     renderClocks();
     applyAccel();
     updatePositions();
@@ -57,6 +69,14 @@ function draw() {
   } else {
     drawClocks();
     renderObjects();
+  }
+}
+
+function updatePastBalls() {
+  pastBalls.push([ball.x, ball.y])
+  
+  if (pastBalls.length > tailLength) {
+    pastBalls.shift();
   }
 }
 
@@ -86,23 +106,31 @@ function drawClocks() {
 
 function renderClocks() {
   
+  GRfactorball = 1;
+  GRfactorpaddle = 1;
+  p1 = createVector(p1X, p1Y);
+  
   particles.forEach(particle => {
-    n = p5.Vector.sub(particle,ball);
-    r = n.mag();
-    if ((200000*Gm)/(r*(maxSpeed**2)) < 1) {
-      GRtime = sqrt(1-(200000*Gm)/(r*(maxSpeed**2)));
+    rb = p5.Vector.sub(particle,ball).mag();
+    rp = p5.Vector.sub(particle,p1).mag();
+    if ((200000*Gmm)/(rb*(maxSpeed**2)) < 1) {
+      GRtimeball = sqrt(1-(200000*Gmm)/(rb*(maxSpeed**2)));
     }
-    ballGamma = sqrt(1 - (ballSpeed.mag()**2 / maxSpeed**2));
-    p1Speed = abs(p1Y - pmouseY);
-    playerGamma = 1;
-    if ((p1Speed**2 / maxSpeed**2) < 1) {
-      playerGamma = sqrt(1 - (p1Speed**2 / maxSpeed**2));
+    if ((200000*Gmm)/(rp*(maxSpeed**2)) < 1) {
+      GRtimepaddle = sqrt(1-(200000*Gmm)/(rp*(maxSpeed**2)));
     }
-    playerTheta += (clockSpeed*playerGamma);
-    ballTheta += (clockSpeed*ballGamma*GRtime);
-    masterTheta += clockSpeed;
+    
+    GRfactorball *= GRtimeball;
+    GRfactorpaddle *= GRtimepaddle;
+    
   });
   
+  ballTheta += (clockSpeed*GRfactorball);
+  playerTheta += (clockSpeed*GRfactorpaddle);
+
+  
+  
+  masterTheta += clockSpeed;
   drawClocks();
   
 }
@@ -142,6 +170,9 @@ function changeBG() {
   paused = !paused;
 }
 
+function changeBP() {
+  showPotential = !showPotential;
+}
 function applyAccel() {
   particles.forEach(particle => {
     n = p5.Vector.sub(particle,ball);
@@ -149,27 +180,58 @@ function applyAccel() {
     v = ballSpeed.mag();
     rel_correction = p5.Vector.mult(p5.Vector.add(p5.Vector.mult(n, v**2), p5.Vector.mult(ballSpeed,4*p5.Vector.dot(n,ballSpeed))),Gmm/(maxSpeed**2*r**3));
     a = p5.Vector.add(p5.Vector.mult(n, Gmm / r**2), rel_correction);
+    relsize = p5.Vector.mult(a, r**2).mag()/2000;
     ballSpeed.add(a);
     });
+  
 }
 
 function renderObjects() {
+  
+   particles.forEach(particle => {
+   
+    if (showPotential) {
+      for (let i = 0; i < 10; i++) {
+        diff = 10 - i;
+        particleBlue.setAlpha(255 - 25*diff);
+        fill(particleBlue);
+        Reff = (particleR+20*diff)*relsize;
+        ellipse(particle.x, particle.y, Reff, Reff);
+      } 
+    }
+    
+    fill(particleBlue);
+    ellipse(particle.x, particle.y, particleR, particleR);
+  });
+  
+  particleBlue.setAlpha(255);
+  
+    
+  i = 0;
+  pastBalls.forEach(b => {
+    diff = ((pastBalls.length - i))**2;
+    ballRed.setAlpha(255 - 2*diff);
+    fill(ballRed);
+    Reff = (ballR-2*diff/pastBalls.length);
+    ellipse(b[0], b[1], Reff, Reff);
+    i += 1;
+    });
+  
+  ballRed.setAlpha(255);
+  
   fill(0);
   textSize(14);
+  
   text("Gravitational constant", 100, windowH - 40);
   text("Light speed", 270, windowH - 40);
-  
+  textFont('Arial');
   textSize(32);
   text(String(p1Score + ' - ' + p2Score), windowW / 2, 30);
+  textFont('Helvetica');
 
   rect(p1X, p1Y - paddleH*p1Gamma/2, paddleW, paddleH*p1Gamma, 20);
   rect(p2X, p2Y - paddleH*p2Gamma/2, paddleW, paddleH*p2Gamma, 20);
-  ellipse(ball.x, ball.y, ballR, ballR);
-  
-  fill(126, 173, 247);
-  particles.forEach(particle => {
-    ellipse(particle.x, particle.y, particleR, particleR);
-  });
+
 }
 
 function updatePositions() {
@@ -200,19 +262,18 @@ function checkCollision() {
       ballSpeed.y *= -1;
   }
   
-  if ((ball.x < p1X + paddleW) && (ball.x > p1X) && (ball.y > p1Y - paddleH*p1Gamma/2) && (ball.y < p1Y + paddleH*p1Gamma/2)) {
+  if ((ball.y  < p1Y + paddleH*p1Gamma/2) && (ball.y  > p1Y + paddleH*p1Gamma/2- 20) && (ball.x < p1X + paddleW) && (ball.x > p1X)) {
+    ball.x = p1X + paddleW;
+    ballSpeed.x = abs(ballSpeed.x);
+  } else if ((ball.y + ballR > p1Y - paddleH*p1Gamma/2) && (ball.y  < p1Y - paddleH*p1Gamma/2+ 20) && (ball.x < p1X + paddleW) && (ball.x > p1X)) {
+      ball.x = p1X + paddleW;
+      ballSpeed.x = abs(ballSpeed.x);
+
+  } else if ((ball.x < p1X + paddleW) && (ball.x > p1X) && (ball.y > p1Y - paddleH*p1Gamma/2) && (ball.y < p1Y + paddleH*p1Gamma/2)) {
       ballSpeed.x *= -1;
-  }
-  
-  if ((ball.x + ballR > p2X) && (ball.x < p2X) && (ball.y > p2Y - paddleH*p2Gamma/2) && (ball.y < p2Y + paddleH*p2Gamma/2)) {
+  } else if ((ball.x + ballR > p2X) && (ball.x < p2X) && (ball.y > p2Y - paddleH*p2Gamma/2) && (ball.y < p2Y + paddleH*p2Gamma/2)) {
       ballSpeed.x *= -1;
-  }
-  
-  // if (checkRectangle(p1X, p1Y - paddleH*p1Gamma/2, paddleW, paddleH*p1Gamma, ball.x, ball.y, ballR, ballR) || checkRectangle(p2X, p2Y - paddleH*p2Gamma/2, paddleW, paddleH*p2Gamma, ball.x, ball.y, ballR, ballR)) {
-  //   console.log("Hi")
-  //   ballSpeed.x *= 1;
-  // }
-  
+  } 
   
   if (ball.x <= 0) {
     ball.y = windowH/2;
