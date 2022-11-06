@@ -1,5 +1,3 @@
-// To Do:
-//   - something to visualize physics
 
 function setup() {
   relsize = 1;
@@ -18,8 +16,7 @@ function setup() {
   easing = 0.1;
   p1Y = p2Y;
   ballR = 20;
-  ballSpeed = createVector(0,0);
-  p1X = paddleW+20;
+  ballSpeed = createVector(random(-12, 12), random(-12, 12));  p1X = paddleW+20;
   p2X = windowW - paddleW*2-20;
   p2Difficulty = 1.5;
   p1Score = 0;
@@ -224,9 +221,9 @@ function renderObjects() {
   
   text("Gravitational constant", 100, windowH - 40);
   text("Light speed", 270, windowH - 40);
-  textFont('Arial');
-  textSize(32);
-  text(String(p1Score + ' - ' + p2Score), windowW / 2, 30);
+  textFont('Roboto');
+  textSize(48);
+  text(String(p1Score + ' - ' + p2Score), (windowW - 100) / 2, 50);
   textFont('Helvetica');
 
   rect(p1X, p1Y - paddleH*p1Gamma/2, paddleW, paddleH*p1Gamma, 20);
@@ -278,7 +275,7 @@ function checkCollision() {
   if (ball.x <= 0) {
     ball.y = windowH/2;
     ball.x = windowW/2;
-    ballSpeed = createVector(random(-8, 8), random(-8, 8));
+    ballSpeed = createVector(random(-12, 12), random(-12, 12));
     resetClocks();
     p2Score += 1;
   }
@@ -286,7 +283,7 @@ function checkCollision() {
   if (ball.x + ballR >= windowW){
     ball.y = windowH/2;
     ball.x = windowW/2;
-    ballSpeed = createVector(random(-8, 8), random(-8, 8));
+    ballSpeed = createVector(random(-12, 12), random(-12, 12));
     resetClocks();
 
     p1Score += 1;
