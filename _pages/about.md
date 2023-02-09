@@ -17,10 +17,8 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
 
-im a little confused.
 
-
-i study physics because one time when i was younger some little *shitgobbler* asked me "what falls faster, a tonne of feathers or a tonne of bricks?" 	so i told him my foot was about to fall on his face and then he goes "noo, they'd reach the ground at the same time cuz they weigh the same" and everybody laughed and since then i bid that i would never feel such embarrassment again. 
+i study physics because one time when i was younger some little goober asked me "what falls faster, a tonne of feathers or a tonne of bricks?" 	so i told him my foot was about to fall on his face and then he goes "noo, they'd reach the ground at the same time cuz they weigh the same" and everybody laughed and since then i bid that i would never feel such embarrassment again. 
 
 i've been trying to learn some math but ive only just graduated to counting on one hand and decided i better wait a while before i start using both hands cause like what if i get an itch or something while im doing my homework and i need to scratch it. 
 
